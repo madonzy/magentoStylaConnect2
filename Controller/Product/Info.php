@@ -50,7 +50,7 @@ class Info extends \Magento\Framework\App\Action\Action
 
     public function execute()
     {
-        $errors = [];
+        $error = false;
         $result = null;
 
         try {
@@ -62,14 +62,19 @@ class Info extends \Magento\Framework\App\Action\Action
             /** @var array $result */
             $result = $this->productInfo->getInfo();
         } catch (\Exception $e) {
-            $errors[] = $e->getMessage();
+            $error = $e->getMessage();
         }
 
         //return the json...
         $jsonResult = $this->resultJsonFactory->create();
-        if (!empty($errors)) {
-            $jsonResult->setData(['errors' => $errors]);
-            $jsonResult->setHttpResponseCode(WebapiException::HTTP_NOT_FOUND);
+        if ($error !== false) {
+            $jsonResult->setData(
+                    [
+                        'error'     => $error,
+                        'saleable'  => false,
+                    ]
+                );
+            //$jsonResult->setHttpResponseCode(WebapiException::HTTP_NOT_FOUND);
         } else {
             $jsonResult->setData($result);
         }
@@ -95,7 +100,7 @@ class Info extends \Magento\Framework\App\Action\Action
             }
 
             if (!$product->getId()) {
-                throw new \Exception('Invalid product.');
+                throw new \Exception('Product not found.');
             }
 
             if (!$product->getIsSalable()) {
@@ -104,7 +109,7 @@ class Info extends \Magento\Framework\App\Action\Action
 
             return $product;
         } catch (NoSuchEntityException $e) {
-            throw new \Exception('Invalid product.');
+            throw new \Exception('Product not found.');
         }
     }
 }

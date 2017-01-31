@@ -249,9 +249,6 @@ class ProductRepository extends \Magento\Catalog\Model\ProductRepository
         $this->request->setParam('q', $queryValue);
         
         $productIds = $this->_searchProductsFullText();
-        if(!$productIds) {
-            throw new \Magento\Framework\Exception\NoSuchEntityException();
-        }
         
         //we no longer need our original query filter, we'll now turn it into the actual found product_ids filter, instead
         $filter->setConditionType('in')->setField('entity_id')->setValue($productIds);
@@ -434,10 +431,6 @@ class ProductRepository extends \Magento\Catalog\Model\ProductRepository
         
         //dispatch the event
         $this->eventManager->dispatch(self::EVENT_GET_PRODUCTS, ['collection' => $collection, 'searchCriteria' => $searchCriteria]);
-        
-        if(!count($searchResult->getItems())) {
-            throw new \Magento\Framework\Exception\NoSuchEntityException();
-        }
 
         return $searchResult;
     }
