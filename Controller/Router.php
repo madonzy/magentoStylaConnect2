@@ -48,9 +48,7 @@ class Router implements \Magento\Framework\App\RouterInterface
     {
         $identifier = trim($request->getPathInfo(), '/');
 
-        $stylaFrontendName = $this->_getFrontendName();
-        if (strpos($identifier, $stylaFrontendName) !== false) {
-
+        if ($this->isMagazinePage($request)) {
             $request->setModuleName('stylaconnect2page')->setControllerName('page')->setActionName('view');
         } else {
             //There is no match
@@ -58,7 +56,7 @@ class Router implements \Magento\Framework\App\RouterInterface
         }
 
         //we want the part after the initial magazine uri, as it may point us to the user's intention
-        $route = $this->_getRouteSettings($identifier, $request);
+        $route = $this->_getRouteSettings($identifier);
         $request->setParam('path', $route);
 
         /*
@@ -68,6 +66,19 @@ class Router implements \Magento\Framework\App\RouterInterface
             'Magento\Framework\App\Action\Forward', ['request' => $request]
         );
     }
+    
+    /**
+     * Are we currently on a magazine page?
+     * 
+     * @param \Magento\Framework\App\RequestInterface $request
+     * @return bool
+     */
+    public function isMagazinePage(\Magento\Framework\App\RequestInterface $request)
+    {
+        $stylaFrontendName = $this->_getFrontendName(); //my configured magazine uri
+        
+        return ($request->getFrontName() == $stylaFrontendName);
+    }
 
     /**
      * Get only the last part of the route, leading up to a specific page
@@ -76,15 +87,15 @@ class Router implements \Magento\Framework\App\RouterInterface
      * 
      * @return string
      */
-    protected function _getRouteSettings($path, \Magento\Framework\App\RequestInterface $request)
+    protected function _getRouteSettings($path)
     {
-        //the path should not contain the trailing slash, the styla api is not expecting it
-        $path = rtrim(str_replace($this->_getFrontendName(), '', $path), '/');
+        //whatever the pathinfo i'm getting, all i need is anything to the right of my current magazine name:
+        $magazineName = $this->_getFrontendName();
+        $route = false;
+        if(false !== ($pos = strpos($path, $magazineName))) {
+            $route = substr($path, stripos($path, $magazineName) + strlen($magazineName));
+        }
         
-        //all the get params should be retained
-        $requestParameters = $this->_getRequestParamsString($request);
-
-        $route = $path . ($requestParameters ? '?' . $requestParameters : '');
         return $route;
     }
     

@@ -265,6 +265,7 @@ class Config extends AbstractHelper
     public function getRootPath()
     {
         if(null === $this->_rootPath) {
+            //get the url to the magazine page, strip index.php from it. this gives me the root path for a magazine
             $url = parse_url(str_replace('/index.php/', '/', $this->storeManager->getStore()->getUrl($this->getRouteName(), ['_type' => \Magento\Framework\UrlInterface::URL_TYPE_LINK])));
             $this->_rootPath = isset($url['path']) ? $url['path'] : '';
         }
