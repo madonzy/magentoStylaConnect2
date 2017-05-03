@@ -3,9 +3,20 @@ namespace Styla\Connect2\Model\Product\Configurable;
 
 use Magento\Catalog\Model\Product;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable\Attribute;
+use Magento\ConfigurableProduct\Pricing\Price\FinalPriceResolver;
 
 class ConfigurableAttributeData extends \Magento\ConfigurableProduct\Model\ConfigurableAttributeData
 {
+    /** @var FinalPriceResolver */
+    protected $priceResolver;
+    
+    public function __construct(
+        FinalPriceResolver $priceResolver
+    )
+    {
+        $this->priceResolver = $priceResolver;
+    }
+    
     /**
      * Get product attributes
      *
@@ -77,7 +88,8 @@ class ConfigurableAttributeData extends \Magento\ConfigurableProduct\Model\Confi
         foreach($simpleProducts as $product) {
             $productData[] = [
                 'id' => $product, 
-                'saleable' => isset($allowProducts[$product]) ? $allowProducts[$product]->getIsSalable() : false
+                'saleable' => isset($allowProducts[$product]) ? $allowProducts[$product]->getIsSalable() : false,
+                'price' => $this->priceResolver->resolvePrice($allowProducts[$product]),
                 ];
         }
         
